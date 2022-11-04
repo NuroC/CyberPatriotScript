@@ -83,7 +83,7 @@ $executedCommands++
 
 log "Firewall features" "yellow"
 
-# settingsd that apply to the per-profile configurations on the windows Firewall with Advanced Security
+# settings that apply to the per-profile configurations on the windows Firewall with Advanced Security
 # https://learn.microsoft.com/en-us/powershell/module/netsecurity/set-netfirewallprofile?view=windowsserver2022-ps
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
 Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen True -AllowUnicastResponseToMulticast True -LogFileName %SystemRoot%\System32\LogFiles\Firewall\pfirewall.log
@@ -106,6 +106,7 @@ foreach ($netFirewallRule in $netFirewallRules) {
 
 
 log "done. executed $executedCommands commands" "green"
+
 # make sure the program keeps running
 $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 
