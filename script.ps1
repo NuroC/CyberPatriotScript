@@ -1,113 +1,111 @@
-# this is a script to make the computer more secure.
-# What it does:
-# 1. It tries to set the "enforce password history" to 24
-
+[int]$executedCommands = 0;
 
 # if the program doesnt have admin, it asks for it and restarts the program
 if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    Write-Host "This script must be run as an administrator."
     Start-Process powershell.exe -Verb RunAs -ArgumentList $MyInvocation.MyCommand.Definition
     Exit
 }
 
-[int]$successfulTasks = 0;
-[int]$totalTasks = 1
-# function to easily log things
+# log function
 function log {
-    param (
-        [string]$message,
-        [string]$color
-    )
+    param ( [string]$message, [string]$color )
     Write-Host $message -ForegroundColor $color
 }
 
-
-log "Starting script..." "white"
-log "Password policy" "yellow"
-
-$totalTasks++
-try {
-    net accounts /uniquepw:24;
-    $successfulTasks++
-    log "[TASK] {$successfulTasks/$totalTasks} | Set enforce password history to 24" "Green"
-} catch {
-    log "Failed to set unique password" "Red";
-    $successfulTasks--;
+function disableFirewallFeature {
+    param ( [string]$ruleName )
+    netsh advfirewall firewall set rule name=$ruleName new enable=no | Out-Null
 }
 
-# set the max password age to 60 days
-$totalTasks++
-try {
-    net accounts /maxpwage:60;
-    $successfulTasks++
-    log "[TASK] {$successfulTasks/$totalTasks} | Set max password age to 60 days" "Green"
-} catch {
-    log "Failed to set max password age" "Red";
-    $successfulTasks--;
+function blockNetFirewallRule {
+    param (
+        [string]$DisplayName,
+        [int]$LocalPort
+    )
+    New-NetFirewallRule -DisplayName $DisplayName -Direction Inbound -Action Block -LocalPort $LocalPort -Protocol TCP | Out-Null
+}
+# local audit policies (https://learn.microsoft.com/en-us/windows/security/threat-protection/security-policy-settings/audit-policy)
+[array]$policies = @(
+    "Account Logon",
+    "Account Management",
+    "DS Access",
+    "Logon/Logoff",
+    "Object Access",
+    "Policy Change",
+    "Privilege Use",
+    "Detailed Tracking",
+    "System"
+)
+
+# firewall rules (https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/netsh-advfirewall-firewall-control-firewall-behavior)
+[array]$firewallRules = @(
+    "Remote Assistance (DCOM-In)",
+    "Remote Assistance (PNRP-In)",
+    "Remote Assistance (RA Server TCP-In)",
+    "Remote Assistance (SSDP TCP-In)",
+    "Remote Assistance (SSDP UDP-In)",
+    "Remote Assistance (TCP-In)"
+)
+
+# dusable netFirewall Rules (https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule?view=windowsserver2022-ps)
+[array]$netFirewallRules = @(
+    "sshTCP:22",
+    "ftpTCP:21",
+    "telnetTCP:23",
+    "SMTPTCP:25",
+    "POP3TCP:110",
+    "SNMPTCP:161",
+    "RDPTCP:3389"
+)
+
+log "local policies" "yellow"
+
+For ($i = 0; $i -lt $policies.Length; $i++) {
+    auditpol /set /category:$($policies[$i]) /success:enable /failure:enable | Out-Null
+    $executedCommands++
 }
 
-# set the min password age to 1 day
-$totalTasks++
-try {
-    net accounts /minpwage:1;
-    $successfulTasks++
-    log "[TASK] {$successfulTasks/$totalTasks} | Set min password age to 1 day" "Green"
-} catch {
-    log "Failed to set min password age" "Red";
-    $successfulTasks--;
+log "Account Policies / Password Policies" "yellow"
+
+net accounts /UNIQUEPW:24 /MAXPWAGE:60 /MINPWAGE:1 /MINPWLEN:12 /lockoutthreshold:5 | Out-Null
+$executedCommands++
+
+log "Guest Account" "yellow"
+
+# disable guest account
+Get-LocalUser Guest | Disable-LocalUser | Out-Null
+$executedCommands++
+
+log "Flush DNS" "yellow"; # Prevents phishing attacks, DNS poisoning, and other DNS-based attacks.
+
+ipconfig /flushdns | Out-Null
+$executedCommands++
+
+log "Firewall features" "yellow"
+
+# settingsd that apply to the per-profile configurations on the windows Firewall with Advanced Security
+# https://learn.microsoft.com/en-us/powershell/module/netsecurity/set-netfirewallprofile?view=windowsserver2022-ps
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen True -AllowUnicastResponseToMulticast True -LogFileName %SystemRoot%\System32\LogFiles\Firewall\pfirewall.log
+$executedCommands += 2
+
+# disable firewall features
+foreach ($fireWall in $firewallRules) {
+    disableFirewallFeature $fireWall
+    $executedCommands++
 }
 
-# set the min password length to 12
-$totalTasks++
-try {
-    net accounts /minpwlen:12;
-    $successfulTasks++
-    log "[TASK] {$successfulTasks/$totalTasks} | Set min password length to 12" "Green"
-} catch {
-    log "Failed to set min password length" "Red";
-    $successfulTasks--;
+log "Firewall rules" "yellow"
+
+# block netFirewall rules
+foreach ($netFirewallRule in $netFirewallRules) {
+    $rule = $netFirewallRule -split ":"
+    blockNetFirewallRule $rule[0] $rule[1]
+    $executedCommands++
 }
 
-log "Done. $successfulTasks/$totalTasks tasks were successful" "Green"
 
-log "Lockout policy" "Yellow"
-
-# set the lockout duration to 30 minutes
-$totalTasks++
-try {
-    net accounts /lockoutduration:30;
-    $successfulTasks++
-    log "[TASK] {$successfulTasks/$totalTasks} | Set lockout duration to 30 minutes" "Green"
-} catch {
-    log "Failed to set lockout duration" "Red";
-    $successfulTasks--;
-}
-
-# set the lockout threshold to 10 minutes
-$totalTasks++
-try {
-    net accounts /lockoutthreshold:10;
-    $successfulTasks++
-    log "[TASK] {$successfulTasks/$totalTasks} | Set lockout threshold to 10 minutes" "Green"
-} catch {
-    log "Failed to set lockout threshold" "Red";
-    $successfulTasks--;
-}
-
-# set the reset account lockout counter to 30 minutes
-$totalTasks++
-try {
-    net accounts /lockoutwindow:30;
-    $successfulTasks++
-    log "[TASK] {$successfulTasks/$totalTasks} | Set reset account lockout counter to 30 minutes" "Green"
-} catch {
-    log "Failed to set reset account lockout counter" "Red";
-    $successfulTasks--;
-}
-
-log "Done. $successfulTasks/$totalTasks tasks were successful" "Green"
-
-log "Use smartScreen online services" "Yellow"
-
-
+log "done. executed $executedCommands commands" "green"
+# make sure the program keeps running
 $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
+
