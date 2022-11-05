@@ -90,7 +90,7 @@ ipconfig /flushdns
 $executedCommands++
 log "Sucessfully flushed DNS" "Green"
 
-# settingsd that apply to the per-profile configurations on the windows Firewall with Advanced Security
+# settings that apply to the per-profile configurations on the windows Firewall with Advanced Security
 # https://learn.microsoft.com/en-us/powershell/module/netsecurity/set-netfirewallprofile?view=windowsserver2022-ps
 Set-NetFirewallProfile -Profile Domain, Public, Private -Enabled True | Out-Null
 Set-NetFirewallProfile -DefaultInboundAction Block -DefaultOutboundAction Allow -NotifyOnListen True -AllowUnicastResponseToMulticast True -LogFileName %SystemRoot%\System32\LogFiles\Firewall\pfirewall.log | Out-Null
@@ -172,7 +172,10 @@ log "Sucessfully disabled SMB1" "Green"
 
 log "done. executed $executedCommands commands" "green"
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 1b1ddf5b296403abd807c5a6ad168a2ea3f14905
 # make sure the program keeps running
 $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
 

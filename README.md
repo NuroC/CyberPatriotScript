@@ -1,4 +1,6 @@
 # Cyber Patrior script
+I made this script specifically for windows.
+
 
 ## What does this script do?
 
@@ -42,6 +44,9 @@ https://learn.microsoft.com/en-us/windows/security/threat-protection/security-po
 - Remote Assistance (SSDP UDP-In)
 - Remote Assistance (TCP-In)
 
+reference:
+https://learn.microsoft.com/en-us/troubleshoot/windows-server/networking/netsh-advfirewall-firewall-control-firewall-behavior
+
 ### Windows net Firewall Rules
 
 - sshTCP (port 22)
@@ -52,3 +57,5 @@ https://learn.microsoft.com/en-us/windows/security/threat-protection/security-po
 - SNMPTCP (port 161)
 - RDPTCP (port 3389)
 
+reference:
+https://learn.microsoft.com/en-us/powershell/module/netsecurity/new-netfirewallrule?view=windowsserver2022-ps
