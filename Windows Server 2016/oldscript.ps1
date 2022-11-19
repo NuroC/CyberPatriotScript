@@ -172,10 +172,5 @@ log "Sucessfully disabled SMB1" "Green"
 
 log "done. executed $executedCommands commands" "green"
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 1b1ddf5b296403abd807c5a6ad168a2ea3f14905
 # make sure the program keeps running
 $host.ui.RawUI.ReadKey("NoEcho,IncludeKeyDown")
-
