@@ -17,7 +17,9 @@
         - Clear Text Password: Disabled
         - Enable Admin Account: Disabled
         - Enable Guest Account: Disabled
-    - [x] Event Audit
+    - [ ] Event Audit
+    - [ ] Registry Values
+    - [ ] Privilege Rights
         
 
 ## TODO: 
