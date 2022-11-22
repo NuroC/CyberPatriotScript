@@ -1,0 +1,14 @@
+{
+    "MinimumPasswordAge": 1,
+    "MaximumPasswordAge": 90,
+    "MinimumPasswordLength": 14,
+    "PasswordComplexity": 1,
+    "PasswordHistorySize": 24,
+    "LockoutBadCount": 5,
+    "ResetLockoutCount": 15,
+    "LockoutDuration": 30,
+    "ForceLogoffWhenHourExpire": 1,
+    "ClearTextPassword": 0,
+    "EnableAdminAccount": 0,
+    "EnableGuestAccount": 0
+}
