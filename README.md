@@ -18,8 +18,30 @@
         - Enable Admin Account: Disabled
         - Enable Guest Account: Disabled
     - [ ] Event Audit
-    - [ ] Registry Values
-    - [ ] Privilege Rights
+        - Audit System Events: Success
+        - Audit Logon Events: Success
+        - Audit Object Access: Success
+        - Audit Privilege Use: Success
+        - Audit Policy Change: Success
+        - Audit Account Management: Success
+        - Audit Process Tracking: Success
+        - Audit DS Access: Success
+        - Audit Account Logon: Success
+- [x] Firewalls
+    - [x] FireWall Rules
+        -  too much to list, see [here](./src/Firewalls//Firewall%20Rules.psm1)
+    - [x] Firewall Profiles
+        - make sure firewall service is running and configurable
+        - Enable the entire firewall
+        - set direction defaults
+        - settings for profiles
+        - Uniqe settings for Public profile
+        - Logging for Domain, Private and Public profiles
+- [x] remove all printers
+- [x] remove unsecure services (see [here](./src/services/services.psm1))
+- [x] remove unsecure scheduled tasks (see [here](./src/tasks/tasks.psm1))
+
+
         
 
 ## TODO: 

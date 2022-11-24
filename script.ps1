@@ -1,12 +1,28 @@
-Import-Module .\src\secpol\Get-Secpol.psm1
-Import-Module .\src\secpol\Set-Secpol.psm1
+# SECPOL
+Import-Module .\src\secpol\Get-Secpol
+Import-Module .\src\secpol\Set-Secpol
 
-Import-Module .\src\modules\log.psm1
+$SystemAccessSecPolConfig = Get-Content -Path '.\lib\secpol\System Access.json' | ConvertFrom-Json
+$EventAuditSecPolConfig = Get-Content -Path '.\lib\secpol\Event Audit.json' | ConvertFrom-Json
 
+# basic modules
+Import-Module .\src\modules\log
+
+# firewall modules
+Import-Module '.\src\Firewalls\Firewall Rules.psm1'
+Import-Module '.\src\Firewalls\firewall.psm1'
+
+#Tasks
+Import-Module .\src\tasks\tasks.psm1
+
+# unsecure services
+Import-Module .\src\services\services.psm1
+
+# SSH
+Import-Module .\src\SSH\sshconf.psm1
 # SECPOL (System Access)
 $SecPool = Get-Secpol "C:\Windows\Temp\SecPool.cfg"
 
-$SystemAccessSecPolConfig = Get-Content -Path '.\lib\secpol\System Access.json' | ConvertFrom-Json
 
 $SystemAccessSecPolConfig.PSObject.Properties | ForEach-Object {
     $name = $_.Name
@@ -15,10 +31,20 @@ $SystemAccessSecPolConfig.PSObject.Properties | ForEach-Object {
     $SecPool.'System Access'.$name = $value
 }
 
+$EventAuditSecPolConfig.PSObject.Properties | ForEach-Object {
+    $name = $_.Name
+    $value = $_.Value
 
-
-$SecPool."Event Audit".AuditSystemEvents = 3
+    $SecPool.'Event Audit'.$name = $value
+}
 
 Set-SecPol -Object $SecPool -CfgFile "C:\Windows\Temp\SecPool.cfg"
-# delete the file
-Remove-Item -Path "C:\Windows\Temp\SecPool.cfg"
+
+set-FirewallRule;
+set-Firewall;
+
+disableTasks;
+
+disableUnsecureServices;
+
+setSSHconfig;
